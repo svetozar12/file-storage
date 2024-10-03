@@ -1,0 +1,6 @@
+node_modules
+src/uploaded-files
+src/temp-files
+temp
+.env
+dist
