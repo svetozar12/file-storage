@@ -2,17 +2,14 @@ import express, { Request, Response } from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
 import { initEnv } from "./utils/env.utils";
-import { connectMongo } from "./database/mongo";
 import { appRouter } from "./routes";
 
 export const envs = initEnv();
-
+console.log(envs);
 import "./utils/multer.utils";
 import "./utils/backup.utils";
 
 const app = express();
-// global instances
-connectMongo();
 
 const PORT = envs.PORT || 3000;
 

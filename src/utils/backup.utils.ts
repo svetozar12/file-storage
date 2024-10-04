@@ -7,9 +7,9 @@ import simpleGit from "simple-git";
 import { envs } from "..";
 
 const backupFolder = path.join(`archives`);
-const repoUrl = `https://${envs.GITHUB_TOKEN}@github.com/svetozar12/e-com.git`;
+const repoUrl = `https://${envs.GITHUB_TOKEN}@github.com/svetozar12/file-storage.git`;
 const pushToGit = async (filePath: string) => {
-  const git = simpleGit(backupFolder);
+  const git = simpleGit();
   try {
     // Check if git repository is initialized
     if (!fs.existsSync(path.join(backupFolder, ".git"))) {
@@ -63,7 +63,8 @@ const createArchive = () => {
 };
 
 // Schedule the cron job to run every hour
-cron.schedule("0 0 * * *", () => {
+// cron.schedule("0 0 * * *", () => {
+cron.schedule("* * * * *", () => {
   if (!envs.GITHUB_TOKEN) {
     return;
   }
