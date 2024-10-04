@@ -6,21 +6,51 @@ import archiver from "archiver";
 import simpleGit from "simple-git";
 import { envs } from "..";
 
-const backupFolder = path.join(`archives`);
+const backupFolder = path.join(__dirname, "backupRepo");
+const archivesFolder = path.join(backupFolder, "archives");
 const repoUrl = `https://${envs.GITHUB_TOKEN}@github.com/svetozar12/file-storage.git`;
+
 const pushToGit = async (filePath: string) => {
-  const git = simpleGit();
   try {
-    // Check if git repository is initialized
-    if (!fs.existsSync(path.join(backupFolder, ".git"))) {
-      console.log("Initializing new Git repository...");
-      await git.init();
-      await git.addRemote("origin", repoUrl);
+    // Ensure the backupFolder exists
+    if (!fs.existsSync(backupFolder)) {
+      fs.mkdirSync(backupFolder, { recursive: true });
     }
 
-    // Add, commit, and push the new file
-    await git.add(filePath);
-    await git.commit(`Backup created: ${new Date().toISOString()}`);
+    const git = simpleGit(backupFolder);
+
+    // Clone the repository if the .git folder doesn't exist
+    if (!fs.existsSync(path.join(backupFolder, ".git"))) {
+      console.log("Cloning the Git repository into backupFolder...");
+      await git.clone(repoUrl, backupFolder);
+    } else {
+      console.log("Pulling latest changes from the remote repository...");
+      await git.pull("origin", "main");
+    }
+
+    // Set user configuration after cloning the repository
+    await git.addConfig("user.name", "svetozar12");
+    await git.addConfig("user.email", "svetozar12@users.noreply.github.com");
+
+    // Ensure the archives folder exists inside the repository
+    if (!fs.existsSync(archivesFolder)) {
+      fs.mkdirSync(archivesFolder, { recursive: true });
+    }
+
+    // Copy the file to the archives folder
+    const fileName = path.basename(filePath);
+    const destination = path.join(archivesFolder, fileName);
+    fs.copyFileSync(filePath, destination);
+
+    // Navigate to the backupFolder
+    git.cwd(backupFolder);
+
+    // Add and commit only the new archive file
+    await git.add(path.relative(backupFolder, destination));
+    const commitMessage = `Backup created: ${new Date().toISOString()}`;
+    await git.commit(commitMessage);
+
+    // Push to remote
     await git.push("origin", "main");
     console.log("Backup pushed to GitHub successfully.");
   } catch (err) {
@@ -34,7 +64,7 @@ const createArchive = () => {
   const timestamp = `${date.getFullYear()}-${
     date.getMonth() + 1
   }-${date.getDate()}_${date.getHours()}-${date.getMinutes()}-${date.getSeconds()}`;
-  const outputFilePath = path.join(`archive_${timestamp}.zip`);
+  const outputFilePath = path.join(__dirname, `archive_${timestamp}.zip`);
 
   const output = fs.createWriteStream(outputFilePath);
   const archive = archiver("zip", {
@@ -62,12 +92,8 @@ const createArchive = () => {
   archive.finalize();
 };
 
-// Schedule the cron job to run every hour
-// cron.schedule("0 0 * * *", () => {
-cron.schedule("* * * * *", () => {
-  if (!envs.GITHUB_TOKEN) {
-    return;
-  }
+// Schedule the cron job to run every minute
+cron.schedule("0 0 * * *", () => {
   console.log("Running cron job to create archive...");
   createArchive();
 });
