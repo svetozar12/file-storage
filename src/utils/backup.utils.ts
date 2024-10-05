@@ -94,6 +94,8 @@ const createArchive = () => {
 
 // Schedule the cron job to run every minute
 cron.schedule("0 0 * * *", () => {
+  if (!envs.GITHUB_TOKEN && envs.NODE_ENV !== "production")
+    console.log("BACKUP IS DISABLED");
   console.log("Running cron job to create archive...");
   createArchive();
 });

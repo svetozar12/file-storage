@@ -5,9 +5,11 @@ import { initEnv } from "./utils/env.utils";
 import { appRouter } from "./routes";
 
 export const envs = initEnv();
-console.log(envs);
+
 import "./utils/multer.utils";
 import "./utils/backup.utils";
+import path from "path";
+import { uploadDir } from "./utils/multer.utils";
 
 const app = express();
 
@@ -22,8 +24,10 @@ app.use(bodyParser.json());
 app.use(cors());
 
 app.get("/", (req: Request, res: Response) => {
-  res.send("Hello, TypeScript with Express!");
+  res.send("Hello to sgospodinov/file-storage!");
 });
+
+app.use("/static", express.static(uploadDir));
 app.use("/", appRouter);
 
 app.listen(PORT, () => {

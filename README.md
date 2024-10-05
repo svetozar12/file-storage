@@ -41,7 +41,13 @@ A basic Node.js service to upload and store files, with daily archiving.
 
   ```sh
   npm start
+
+  # Running Container
+
+  sudo docker run -d -p 3000:3000 -e GITHUB_TOKEN=<token> -v uploaded_files_volume:/app/src/uploaded-files sgospodinov02/file-storage
   ```
+
+````
 
 ### Upload Files
 
@@ -53,9 +59,9 @@ Example:
 
 ```sh
 curl -F "file=@path/to/your/file.txt" http://localhost:3000/upload
-```
+````
 
 ### Archives
 
 - Files are automatically archived once per day.
-- Archives are saved as `.zip` in the `temp` folder.
+- Archives are saved as `.zip` in the `archives` folder.
