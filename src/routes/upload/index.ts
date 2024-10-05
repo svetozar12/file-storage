@@ -17,13 +17,13 @@ uploadRouter.post(
         size: file?.size,
       });
 
-      console.log(file);
-      const targetPath = `${uploadDir}/${Date.now()}-${file?.originalname}`;
+      const name = `${Date.now()}-${file?.originalname}`;
+      const targetPath = `${uploadDir}/${name}`;
 
       await sharp(file?.path)
-        .resize(800) // Resize to 800px width (adjust as needed)
-        .jpeg({ quality: 80 }) // Compress image
-        .toFile(targetPath); // Save to target directory
+        .resize(800)
+        .jpeg({ quality: 80 })
+        .toFile(targetPath);
 
       // Delete the temporary file after processing
       fs.unlink(file?.path || "", (err) => {
@@ -36,7 +36,7 @@ uploadRouter.post(
         return;
       }
 
-      res.status(201).send("Hooray");
+      res.status(201).json({ name });
       return;
     } catch (error) {
       res.status(400).send("Bad " + error);
