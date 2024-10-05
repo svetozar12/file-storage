@@ -3,6 +3,7 @@ import { upload, uploadDir } from "../../utils/multer.utils";
 import { fileSchema } from "./constants";
 import sharp from "sharp";
 import fs from "fs";
+import path from "path";
 
 export const uploadRouter = Router();
 
@@ -17,7 +18,7 @@ uploadRouter.post(
         size: file?.size,
       });
 
-      const name = `${Date.now()}-${file?.originalname}`;
+      const name = `${Date.now()}-${file?.originalname.replace(/\s+/g, "")}`;
       const targetPath = `${uploadDir}/${name}`;
 
       await sharp(file?.path)
